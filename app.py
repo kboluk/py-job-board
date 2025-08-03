@@ -5,12 +5,14 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from typing import Optional, List, Union
 import asyncio
 import json
-from lib.jobs import jobs, tags as available_tags, filter_jobs
+from lib.jobs import tags as available_tags, filter_jobs
 from lib.sessions import createSession, updateFilter, getSession, Filter
+from lib.csrf import CSRFMiddleware
 
 app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.add_middleware(CSRFMiddleware)
 
 templates = Environment(
     loader=FileSystemLoader("templates"),
@@ -23,11 +25,18 @@ async def home(request: Request):
     if not session_id:
         session_id = createSession()
     session = getSession(session_id=session_id)
-    csrfToken = session.csrfToken
-    query = session.filter.query
-    selected_tags = session.filter.selected_tags
     template = templates.get_template("index.html")
-    html = template.render(request=request, jobs=filter_jobs(keyword=query, selectedTags=selected_tags), query="", tags=available_tags, selectedTags=selected_tags, csrfToken=csrfToken)
+    html = template.render(
+        request=request,
+        jobs=filter_jobs(
+            keyword=session.filter.query,
+            selectedTags=session.filter.selected_tags
+        ),
+        query="",
+        tags=available_tags,
+        selectedTags=session.filter.selected_tags,
+        csrfToken=session.csrfToken
+    )
     response = HTMLResponse(content=html)
     response.set_cookie(
         key="session_id",
@@ -42,25 +51,19 @@ async def home(request: Request):
 async def search(
     request: Request,
     q: Optional[str] = Form(None),
-    _csrf: Optional[str] = Form(None),
     tag: Union[str, List[str], None] = Form(None)
 ):
     content_type = request.headers.get("content-type", "")
     session_id = request.cookies.get("session_id")
-    session = getSession(session_id=session_id)
     if content_type.startswith("application/json"):
         data = await request.json()
         query = data.get("q", "")
         selected_tags = data.get("tag", [])
-        supplied_csrf_token = request.headers.get("x-csrf-token")
-        if not supplied_csrf_token == session.csrfToken:
-            raise HTTPException(status_code=403, detail="CSRF token invalid or missing")
         updateFilter(session_id=session_id, filter=Filter(query=query, selected_tags=selected_tags))
         return Response(status_code=204)
     elif content_type.startswith("application/x-www-form-urlencoded"):
         # Use parsed form values from args
         query = q or ""
-        supplied_csrf_token = _csrf or ""
         if isinstance(tag, str):
             selected_tags = [tag]
         elif isinstance(tag, list):
@@ -70,8 +73,6 @@ async def search(
     else:
         return JSONResponse({"error": "Unsupported Content-Type"}, status_code=415)
     
-    if not supplied_csrf_token == session.csrfToken:
-        raise HTTPException(status_code=403, detail="CSRF token invalid or missing")
     updateFilter(session_id=session_id, filter=Filter(query=query, selected_tags=selected_tags))
     filtered_jobs = filter_jobs(keyword=query, selectedTags=selected_tags)
     template = templates.get_template("index.html")
