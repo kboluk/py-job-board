@@ -1,0 +1,51 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# dotenv / secrets
+.env
+*.env
+
+# Compiled files and build artifacts
+*.egg-info/
+dist/
+build/
+
+# pyproject-based tooling
+pip-wheel-metadata/
+*.lock
+
+# Logs
+*.log
+
+# FastAPI + Uvicorn cache (optional)
+*.sqlite3
+.uvicorn/
+
+# pytest / coverage
+htmlcov/
+.tox/
+.coverage
+coverage.xml
+.cache/
+.pytest_cache/
+
+# misc
+*.bak
+*.swp

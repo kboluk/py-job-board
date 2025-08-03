@@ -1,0 +1,29 @@
+<form id="search" method="POST" action="/search">
+  <fieldset>
+    <legend>Search Jobs</legend>
+    <label><input name="q" type="search" value="{{ q }}" /> Search in title, location or company name</label>
+  </fieldset>
+  <fieldset>
+    <legend>Filter with Tags</legend>
+    <ul class="tag-list">
+    {% for tag in tags %}
+      <li>
+        <label
+          for="tag-{{ loop.index }}">
+          <input
+            name="tag"
+            id="tag-{{ loop.index }}"
+            type="checkbox"
+            {% if tag in selectedTags %}
+              checked
+            {% endif %}
+            value="{{ tag|e }}" />
+          {{ tag|e }}
+        </label>
+      </li>
+    {% endfor %}
+    </ul>
+  </fieldset>
+  <button class="button primary" type="submit">Search</button>
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+</form>

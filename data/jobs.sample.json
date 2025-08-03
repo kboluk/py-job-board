@@ -1,0 +1,84 @@
+{
+  "jobs": [
+    {
+      "id": "edc2db16-25d4-488e-9743-063d0bfe71cb",
+      "title": "Senior Front-End Engineer",
+      "company": "Pinecone Labs",
+      "location": "Remote (US ±3 h)",
+      "url": "https://pineconelabs.example/careers/frontend",
+      "tags": ["JavaScript", "React", "Remote", "Full-Time"]
+    },
+    {
+      "id": "28426c39-9e47-4f5a-a9af-71903d14fc29",
+      "title": "DevOps Engineer",
+      "company": "Orbit Bank",
+      "location": "Berlin, DE",
+      "url": "https://orbitbank.example/jobs/devops",
+      "tags": ["AWS", "Kubernetes", "CI/CD", "Full-Time"]
+    },
+    {
+      "id": "112a62cf-87b4-4beb-8b3b-31a4da8cf8b5",
+      "title": "Product Designer (UI/UX)",
+      "company": "Fjord Health",
+      "location": "Oslo, NO • Hybrid",
+      "url": "https://fjordhealth.example/careers/uiux",
+      "tags": ["Design", "Figma", "Hybrid", "Contract"]
+    },
+    {
+      "id": "ac66fe6e-7924-48f4-99d7-cad982e92130",
+      "title": "Backend Engineer - Go",
+      "company": "Glide Logistics",
+      "location": "Austin, TX",
+      "url": "https://glidelogistics.example/jobs/go-backend",
+      "tags": ["Go", "PostgreSQL", "Full-Time", "On-site"]
+    },
+    {
+      "id": "de9b7487-63d0-4dd8-91f6-93462b9e7af4",
+      "title": "Data Scientist",
+      "company": "Nimbus AI",
+      "location": "Remote (EU)",
+      "url": "https://nimbusai.example/careers/data-scientist",
+      "tags": ["Machine-Learning", "Python", "Remote", "Full-Time"]
+    },
+    {
+      "id": "45c54958-089d-4ab4-8cbd-1b3337fae4d4",
+      "title": "Technical Writer",
+      "company": "DocuStream",
+      "location": "Toronto, CA • Hybrid",
+      "url": "https://docustream.example/jobs/tech-writer",
+      "tags": ["Writing", "API-Docs", "Part-Time", "Hybrid"]
+    },
+    {
+      "id": "b94f0f7d-a5ef-4b8d-b0c3-8ca4de3e10d3",
+      "title": "Mobile Developer (Flutter)",
+      "company": "Pocket Pay",
+      "location": "São Paulo, BR",
+      "url": "https://pocketpay.example/careers/flutter",
+      "tags": ["Flutter", "Mobile", "Full-Time", "On-site"]
+    },
+    {
+      "id": "7cf868dc-4fd1-4049-9738-0f49857ba205",
+      "title": "QA Automation Engineer",
+      "company": "Delta Fleet",
+      "location": "Remote (Worldwide)",
+      "url": "https://deltafleet.example/jobs/qa-automation",
+      "tags": ["QA", "Cypress", "Remote", "Contract"]
+    },
+    {
+      "id": "68d2eeb3-a1b8-4270-8eec-e2c8c0d4c5e0",
+      "title": "Security Analyst",
+      "company": "BlueShield Cyber",
+      "location": "Washington D.C.",
+      "url": "https://blueshieldcyber.example/careers/sec-analyst",
+      "tags": ["Security", "SIEM", "Full-Time", "On-site"]
+    },
+    {
+      "id": "01c8f975-7a55-4bb2-8af3-396471ab0e6d",
+      "title": "Junior Front-End Developer",
+      "company": "Bright Startups",
+      "location": "Remote (UK)",
+      "url": "https://brightstartups.example/jobs/junior-frontend",
+      "tags": ["HTML", "CSS", "JavaScript", "Remote", "Intern"]
+    }
+  ]
+}

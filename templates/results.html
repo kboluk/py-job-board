@@ -1,0 +1,12 @@
+<ol class="row is-paddingless">
+  {% for job in jobs %}
+    <li class="col-12 col-6-md col-4-lg">
+      <article class="card">
+        <h2>{{ job.title|e }}</h2>
+        <p>{{ job.company|e }} — {{ job.location|e }}</p>
+        <a class="button primary" href="{{ job.url|e }}" rel="noopener noreferrer">Apply</a>
+      </article>
+    </li>
+  {% endfor %}
+</ol>
+<p id="count" aria-live="polite">{{ jobs|count }} jobs</p>
