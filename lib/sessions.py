@@ -1,9 +1,14 @@
 import uuid
 import asyncio
+import time
+import threading
+from contextlib import asynccontextmanager
 from pydantic import BaseModel
-from fastapi import HTTPException
+from fastapi import FastAPI, HTTPException
 from lib.ee import EventEmitter
 
+SESSION_TTL = 3600  # 1 hour
+CLEANUP_INTERVAL = 300  # every 5 minutes
 
 class Filter(BaseModel):
    query: str = ""
@@ -14,6 +19,7 @@ class Session(BaseModel):
     bus: EventEmitter
     csrfToken: str
     stream: asyncio.Queue[str]
+    last_seen: int = 0
     model_config = {
         "arbitrary_types_allowed": True
     }
@@ -27,7 +33,8 @@ def createSession() -> str:
       filter=Filter(),
       bus=EventEmitter(),
       csrfToken=uuid.uuid4().hex,
-      stream=asyncio.Queue()
+      stream=asyncio.Queue(),
+      last_seen=int(time.time())
     )
     return session_id
 
@@ -38,6 +45,35 @@ def getSession(*, session_id: str) -> Session:
 
 def updateFilter(*, session_id: str, filter: Filter):
     session = sessions[session_id]
-    if not session: return
+    touch_session(session_id=session_id)
     session.filter = filter
     session.bus.emit('update')
+
+def touch_session(*, session_id: str):
+    session = getSession(session_id=session_id)
+    if session:
+        session.last_seen = int(time.time())
+
+def cleanup_sessions_loop():
+    while True:
+        now = time.time()
+        expired = [
+            sid for sid, session in sessions.items()
+            if now - session.last_seen > SESSION_TTL
+        ]
+        for sid in expired:
+            print(f"[Session Cleanup] Removing inactive session: {sid}")
+            del sessions[sid]
+        time.sleep(CLEANUP_INTERVAL)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    thread = threading.Thread(target=cleanup_sessions_loop, daemon=True)
+    thread.start()
+    print("[Startup] Session cleanup thread started")
+
+    yield
+
+    # Shutdown (optional cleanup)
+    print("[Shutdown] Application shutting down")

@@ -6,10 +6,10 @@ from typing import Optional, List, Union
 import asyncio
 import json
 from lib.jobs import tags as available_tags, filter_jobs
-from lib.sessions import createSession, updateFilter, getSession, Filter
+from lib.sessions import createSession, updateFilter, getSession, Filter, lifespan, touch_session
 from lib.csrf import CSRFMiddleware
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.add_middleware(CSRFMiddleware)
@@ -24,6 +24,8 @@ async def home(request: Request):
     session_id = request.cookies.get("session_id")
     if not session_id:
         session_id = createSession()
+    else:
+        touch_session(session_id=session_id)
     session = getSession(session_id=session_id)
     template = templates.get_template("index.html")
     html = template.render(
@@ -73,17 +75,27 @@ async def search(
     else:
         return JSONResponse({"error": "Unsupported Content-Type"}, status_code=415)
     
+    session = getSession(session_id=session_id)
     updateFilter(session_id=session_id, filter=Filter(query=query, selected_tags=selected_tags))
     filtered_jobs = filter_jobs(keyword=query, selectedTags=selected_tags)
     template = templates.get_template("index.html")
-    html = template.render(request=request, jobs=filtered_jobs, query=query, tags=available_tags, selectedTags=selected_tags)
+    html = template.render(
+        request=request,
+        jobs=filtered_jobs,
+        query=query,
+        tags=available_tags,
+        selectedTags=selected_tags,
+        csrfToken=session.csrfToken
+    )
     return HTMLResponse(content=html)
 
 
 @app.get("/events")
 async def events(request: Request):
     session_id = request.cookies.get("session_id")
-
+    if not session_id:
+        raise HTTPException(status_code=400, detail="Missing session ID")
+    touch_session(session_id=session_id)
     session = getSession(session_id=session_id)
     queue = session.stream
 
