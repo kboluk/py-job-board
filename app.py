@@ -3,11 +3,14 @@ from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from typing import Optional, List, Union
+from contextlib import suppress
 import asyncio
 import json
 from lib.jobs import tags as available_tags, filter_jobs
 from lib.sessions import createSession, updateFilter, getSession, Filter, lifespan, touch_session
 from lib.csrf import CSRFMiddleware
+
+SSE_PING_INTERVAL = 15
 
 app = FastAPI(lifespan=lifespan)
 
@@ -99,6 +102,13 @@ async def events(request: Request):
     session = getSession(session_id=session_id)
     queue = session.stream
 
+    async def keep_alive():
+        while True:
+            await asyncio.sleep(SSE_PING_INTERVAL)
+            if await request.is_disconnected():
+                return
+            session.stream.put_nowait("event: ping\ndata: ping\n\n")
+            
     def push_results():
         query  = session.filter.query
         selected_tags = session.filter.selected_tags
@@ -112,21 +122,22 @@ async def events(request: Request):
 
 
     async def event_stream():
-        # Initial ping (helps avoid connection timeout)
-        yield "event: ping\ndata: connected\n\n"
+        yield "retry: 10000\nevent: ping\ndata: connected\n\n"
 
-        while True:
-            try:
+        try:
+            while True:
                 message = await queue.get()
                 yield message
-                # Exit early if client disconnected
                 if await request.is_disconnected():
-                    session.bus.off("update", push_results)
                     break
 
-            except asyncio.CancelledError:
-                session.bus.off("update", push_results)
+        finally:
+            session.bus.off("update", push_results)
+            ping_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await ping_task
 
     session.bus.on("update", push_results)
+    ping_task = asyncio.create_task(keep_alive())
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
